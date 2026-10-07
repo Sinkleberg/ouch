@@ -42,7 +42,7 @@ fn list_custom_extension_asks_to_list_and_does_not_extract() {
 #[test]
 fn custom_extension_confirmation_policies_preserve_listing_and_extraction() {
     for operation in ["list", "decompress"] {
-        for (flags, answer, proceed, prompt, warning) in [
+        for (flags, answer, proceed, prompt, format_warning) in [
             (vec![], "y\n", true, true, true),
             (vec![], "n\n", false, true, true),
             (vec!["--yes"], "", true, false, true),
@@ -67,7 +67,11 @@ fn custom_extension_confirmation_policies_preserve_listing_and_extraction() {
             let stdout = String::from_utf8(output.stdout).unwrap();
             let expected = format!("Do you want to {operation} '");
             assert_eq!(stderr.contains(&expected), prompt, "{operation} {flags:?}: {stderr}");
-            assert_eq!(stderr.contains("[WARNING]"), warning, "{operation} {flags:?}: {stderr}");
+            assert_eq!(
+                stderr.contains("[WARNING] No recognized extensions in "),
+                format_warning,
+                "{operation} {flags:?}: {stderr}"
+            );
             if operation == "list" {
                 assert!(!stderr.contains("Do you want to decompress '"), "{stderr}");
                 assert_eq!(stdout.contains("note.txt"), proceed, "{stdout}");
